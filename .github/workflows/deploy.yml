@@ -18,7 +18,8 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh diana@${{ secrets.TARGET_HOST }} "
+             ssh -o StrictHostKeyChecking=no diana@${{ secrets.TARGET_HOST }} "
+
             cd ~ &&
             if [ ! -d 'app' ]; then
               git clone https://github.com/dianaoleynikova/technologies-of-software-architecture app
@@ -32,7 +33,9 @@ jobs:
       - name: Verify deployment
         run: |
           sleep 15
-          ssh diana@${{ secrets.TARGET_HOST }} "
+
+          ssh -o StrictHostKeyChecking=no diana@${{ secrets.TARGET_HOST }} "
+
             curl -f http://localhost/health/alive && echo 'Service is UP' || echo 'Service is DOWN'
           "
 
