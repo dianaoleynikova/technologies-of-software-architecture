@@ -18,24 +18,17 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-             ssh -o StrictHostKeyChecking=no diana@${{ secrets.TARGET_HOST }} "
-
-            cd ~ &&
-            if [ ! -d 'app' ]; then
-              git clone https://github.com/dianaoleynikova/technologies-of-software-architecture app
-            fi &&
-            cd app &&
-            git pull origin main &&
-            docker-compose down &&
-            docker-compose up -d --build
-          "
+          ssh -o StrictHostKeyChecking=no diana@${{ secrets.TARGET_HOST }} \
+            "cd ~ && \
+            if [ ! -d app ]; then git clone https://github.com/dianaoleynikova/technologies-of-software-architecture app; fi && \
+            cd app && \
+            git pull origin main && \
+            docker-compose down && \
+            docker-compose up -d --build"
 
       - name: Verify deployment
         run: |
           sleep 15
-
-          ssh -o StrictHostKeyChecking=no diana@${{ secrets.TARGET_HOST }} "
-
-            curl -f http://localhost/health/alive && echo 'Service is UP' || echo 'Service is DOWN'
-          "
+          ssh -o StrictHostKeyChecking=no diana@${{ secrets.TARGET_HOST }} \
+            "curl -sf http://localhost/health/alive && echo 'Service is UP' || echo 'Service is DOWN'"
 
