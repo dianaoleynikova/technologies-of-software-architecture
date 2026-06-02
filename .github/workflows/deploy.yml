@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    name: Deploy to target
+    runs-on: self-hosted
+    needs: []
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.TARGET_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh -i ~/.ssh/deploy_key diana@${{ secrets.TARGET_HOST }} "
+            cd ~ &&
+            if [ ! -d 'app' ]; then
+              git clone https://github.com/dianaoleynikova/technologies-of-software-architecture app
+            fi &&
+            cd app &&
+            git pull origin main &&
+            docker compose down &&
+            docker compose up -d --build
+          "
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          ssh -i ~/.ssh/deploy_key diana@${{ secrets.TARGET_HOST }} "
+            curl -f http://localhost/health/alive && echo 'Service is UP' ||
+            echo 'Service is DOWN'
+          "
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
