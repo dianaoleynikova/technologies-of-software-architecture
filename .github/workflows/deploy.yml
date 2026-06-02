@@ -35,5 +35,4 @@ jobs:
           ssh diana@${{ secrets.TARGET_HOST }} "
             curl -f http://localhost/health/alive && echo 'Service is UP' || echo 'Service is DOWN'
           "
-EOF
 
